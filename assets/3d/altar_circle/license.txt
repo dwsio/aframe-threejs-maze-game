@@ -1,0 +1,11 @@
+Model Information:
+* title:	altar_circle
+* source:	https://sketchfab.com/3d-models/altar-circle-a892d43e5b7a481bb4c817cae7b0032e
+* author:	youoyouyou (https://sketchfab.com/youoyouyou)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "altar_circle" (https://sketchfab.com/3d-models/altar-circle-a892d43e5b7a481bb4c817cae7b0032e) by youoyouyou (https://sketchfab.com/youoyouyou) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
