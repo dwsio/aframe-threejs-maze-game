@@ -11,18 +11,18 @@
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 	<script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
-    <script src="src/common.js"></script>
+	<script src="src/component.js"></script>
+    <script src="src/script.js"></script>
   </head>
 
   <body>
     <a-scene id="scene" class="fullscreen" inspector="" keyboard-shortcuts="" screenshot="" vr-mode-ui="" shadow="autoUpdate: true; type:pcfsoft" fog="type: linear; near: 0; far: 1000; color: #000" >
       <a-assets>
-        <img src="assets/images/door.png" id="asset_door">
-        <img src="assets/images/wall.jpg" id="asset_wall">
-        <img src="assets/images/roof.jpg" id="asset_roof">
-        <img src="assets/images/ground.jpg" id="asset_ground">
-        <img src="assets/images/instruction.jpg" id="asset_instruction">
-		<img src="assets/images/night_sky.jpg" id="asset_sky">
+        <img id="asset_wall" src="assets/images/wall.jpg">
+        <img id="asset_ground" src="assets/images/ground.jpg">
+        <img id="asset_instruction" src="assets/images/instruction.png">
+		<img id="asset_sky" src="assets/images/night_sky.jpg">
+		<img id="asset_completed" src="assets/images/completed.PNG">
 
 		<a-asset-item id="asset_altar" src="assets/3d/altar_circle/scene.gltf"></a-asset-item>
 		<a-asset-item id="asset_price" src="assets/3d/medieval_gate/scene.gltf"></a-asset-item>
@@ -35,7 +35,7 @@
         position="0 1.6 -2"
 		wasd-controls
 		look-controls="pointerLockEnabled: true">
-		<a-light type="point" color="#fff" intensity="2"></a-light>
+		<!-- <a-light type="point" color="#fff" intensity="2"></a-light> -->
         <a-cursor 
           id="cursor" 
           position="0 0 -1" 
@@ -45,20 +45,18 @@
           geometry="radiusInner: 0.015; radiusOuter: 0.025" 
           color="#00e2ff"></a-cursor>
         <a-text value="Time" height="0.001" material="color:#ff3232" position="-0.1 -0.7 -1" id="board"></a-entity>
-        <a-text value="" height="0.001" material="color:#f4ff61" position="-0.3 0 -1" id="winner"></a-entity>
-		
       </a-camera>
     </a-scene>
     
     <script>
-		var maze;
-		var seconds;
-		var counter;
+		let maze;
+		let seconds;
+		let counter;
 
 		function init(width, height) {
 		clearInterval(counter);
 		maze = new Array(parseInt(height));
-		for (var i = 0; i < maze.length; i++) {
+		for (let i = 0; i < maze.length; i++) {
 			maze[i] = [].repeat(0, width);
 		}
 
@@ -70,10 +68,6 @@
 			maze = JSON.parse(LZString.decompressFromBase64(QueryString.maze));
 		}
 		paintMaze(maze);
-		// var winner = document.getElementById("winner");
-		// var attr_text = winner.getAttribute("text");
-		// attr_text = "";
-		// winner.setAttribute("text", attr_text);
 		seconds = 0;
 		counter = setInterval(function () {
 			let board = document.getElementById("board");
@@ -86,9 +80,8 @@
 		}, 1000);
 		}
 
-
-		var width = QueryString.width;
-		var height = QueryString.height;
+		let width = QueryString.width;
+		let height = QueryString.height;
 		if (typeof width == "undefined") {
 		width = 18;
 		}
@@ -96,107 +89,6 @@
 		height = 14;
 		}
 		init(width, height);
-
-		AFRAME.registerComponent("camera-cube-env", {
-		schema: {
-			resolution: { type: "number", default: 128 },
-			distance: { type: "number", default: 100 },
-			interval: { type: "number", default: 100 },
-			matoverride: { type: "boolean", default: false },
-			metalness: { type: "float", default: 1.0 },
-			roughness: { type: "float", default: 0.0 },
-			repeat: { type: "boolean", default: true },
-		},
-
-		multiple: false,
-
-		init: function () {
-			this.tick = AFRAME.utils.throttleTick(this.tick, this.data.interval, this);
-
-			this.cubeRenderTarget = new THREE.WebGLCubeRenderTarget(
-			this.data.resolution,
-			{
-				format: THREE.RGBFormat,
-				generateMipmaps: true,
-				minFilter: THREE.LinearMipmapLinearFilter,
-			}
-			);
-			this.cam = new THREE.CubeCamera(
-			0.2,
-			this.data.distance,
-			this.cubeRenderTarget
-			);
-
-			this.el.object3D.add(this.cam);
-
-			this.loaded = this.el.addEventListener("model-loaded", () => {
-			const obj = this.el.getObject3D("mesh");
-			obj.traverse((node) => {
-				var myMesh = this.el.getObject3D("mesh");
-				myMesh.visible = false;
-
-				AFRAME.scenes[0].renderer.autoClear = true;
-				var camVector = new THREE.Vector3();
-				this.el.object3D.getWorldPosition(camVector);
-				this.cam.position.copy(this.el.object3D.worldToLocal(camVector));
-				this.cam.update(AFRAME.scenes[0].renderer, this.el.sceneEl.object3D);
-
-				if (node.type.indexOf("Mesh") !== -1) {
-				if (this.data.matoverride == true) {
-					node.material.metalness = this.data.metalness;
-					node.material.roughness = this.data.roughness;
-				}
-				node.material.envMap = this.cam.renderTarget.texture;
-				node.material.needsUpdate = true;
-				}
-				myMesh.visible = true;
-			});
-			});
-		},
-
-		tick: function (t, dt) {
-			if (!this.done) {
-			this.redraw(this.cam, this.el, this.el.getObject3D("mesh"));
-			if (!this.data.repeat) {
-				this.done = true;
-			}
-			}
-		},
-
-		redraw: function (myCam, myEl, myMesh) {
-			if (this.el.getObject3D("mesh") != null && AFRAME.scenes[0] != null) {
-			myMesh.visible = false;
-
-			AFRAME.scenes[0].renderer.autoClear = true;
-			var camVector = new THREE.Vector3();
-			myEl.object3D.getWorldPosition(camVector);
-			myCam.position.copy(myEl.object3D.worldToLocal(camVector));
-			myCam.update(AFRAME.scenes[0].renderer, myEl.sceneEl.object3D);
-			if (myMesh) {
-				myMesh.traverse(function (child) {
-				if (child instanceof THREE.Mesh) {
-					child.material.envMap = myCam.renderTarget.texture;
-					child.material.needsUpdate = true;
-				}
-				});
-			}
-			myMesh.visible = true;
-			}
-		},
-
-		update: function (oldData) {
-			this.redraw(this.cam, this.el, this.el.getObject3D("mesh"));
-		},
-
-		remove: function () {
-			this.loaded.remove();
-		},
-
-		pause: function () {},
-
-		play: function () {},
-		});
-
     </script>
   </body>
 </html>
